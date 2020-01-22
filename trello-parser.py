@@ -5,12 +5,15 @@ import urllib.request, json, yaml, re
 
 # settings
 json_file = 'trello.json' # the json file to parse
+output_file = "output.md" # output markdown
 commentVisibilityDays = 30
 commentIsFreshDays = 7
 
 # open json
 with open(json_file) as data_file:
     data = json.load(data_file)
+
+open(output_file, 'w').close()
 
 # globals
 lists = data["lists"]
@@ -22,6 +25,10 @@ def nick(fullName):
     if fullName == "Matteo Pelucco":
         return "PELM"
     return fullName
+
+def write(*args, **kwargs):
+    with open(output_file, 'a') as file:
+        print(*args, **kwargs, file=file)
 
 def collectComments(card): 
     cardComments = []
@@ -51,18 +58,29 @@ def collectComments(card):
             comment["author"] = authorNickname
 
             cardComments.append(comment)
-    return cardComments
+    
+    return sorted(cardComments, key=lambda k: k['date'], reverse=True) 
 
-
+write ("##### exported by Trello Parser on {date} #####".format(date=str(datetime.datetime.now())))
 for list in lists: 
-    print("\n### " + list["name"])
-    for card in cards:
-        if (card["idList"] == list["id"] and not card["closed"]): 
-            print("- " + card["name"])
+    if not list["closed"]:
+        write("\n---")
+        write("### " + list["name"])
+        write("---")
+        for card in cards:
+            if (card["idList"] == list["id"] and not card["closed"]):
 
-            comments = collectComments(card)
-            for comment in comments:
-                if comment["isFresh"]:
-                    print ("  - [{author} - {date}] {text}".format(author=comment["author"], date=comment["date"], text=comment["text"]))
-                else:
-                    print ("  - <span style=\"color:blue\">_NEW_ [{author} - {date}] {text}</span>".format(author=comment["author"], date=comment["date"], text=comment["text"]))
+                # description
+                cardDescription = "";
+                
+                if "desc" in card and card["desc"]: 
+                    cardDescription = " - `" + card["desc"] + "`"
+                    
+                write("- " + card["name"] + cardDescription)
+
+                comments = collectComments(card)
+                for comment in comments:
+                    if comment["isFresh"]:
+                        write ("  - [{author} - {date}] {text}".format(author=comment["author"], date=comment["date"], text=comment["text"]))
+                    else:
+                        write ("  - <span style=\"color:blue; font-weight:bold;\"> [{author} - {date}] {text}</span>".format(author=comment["author"], date=comment["date"], text=comment["text"]))
