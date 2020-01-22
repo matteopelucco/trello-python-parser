@@ -62,6 +62,7 @@ def collectComments(card):
     return sorted(cardComments, key=lambda k: k['date'], reverse=True) 
 
 write ("##### exported by Trello Parser on {date} #####".format(date=str(datetime.datetime.now())))
+write ("##### source code and instructions available here: https://github.com/matteopelucco/trello-python-parser #####")
 for list in lists: 
     if not list["closed"]:
         write("\n---")
