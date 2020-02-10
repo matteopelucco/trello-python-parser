@@ -7,7 +7,7 @@ import urllib.request, json, yaml, re
 json_file = 'trello.json' # the json file to parse
 output_file = "output.md" # output markdown
 commentVisibilityDays = 30
-commentIsFreshDays = 7
+commentIsFreshDays = 6
 
 # open json
 with open(json_file) as data_file:
@@ -25,6 +25,26 @@ def nick(fullName):
     if fullName == "Matteo Pelucco":
         return "PELM"
     return fullName
+
+def toHtmlColor(colorName):
+
+    colorMapping = {
+        "green": "#61bd4f", 
+        "sky": "#00c2e0", 
+        "yellow": "#f2d600", 
+        "orange": "#ff9f1a", 
+        "red": "#eb5a46", 
+        "purple": "#c377e0", 
+        "blue": "#0079bf", 
+        "lime": "#51e898", 
+        "pink": "#ff78cb", 
+        "black": "#344563"
+    }
+
+    if colorName in colorMapping: 
+        return colorMapping[colorName]
+
+    return colorName
 
 def write(*args, **kwargs):
     with open(output_file, 'a') as file:
@@ -76,8 +96,16 @@ for list in lists:
                 
                 if "desc" in card and card["desc"]: 
                     cardDescription = " - `" + card["desc"] + "`"
-                    
-                write("- " + card["name"] + cardDescription)
+                
+                labels = "";
+                if "labels" in card: 
+                    for label in card["labels"]:
+                        color = toHtmlColor(label["color"])
+                        if labels != "":
+                            labels = labels + " "
+                        labels = labels + "<span style=\"color:{color};text-transform:capitalize;\">[{label}] </span>".format(color=color, label=label["name"])
+
+                write("- " + labels + "**" + card["name"] + "**" + cardDescription)
 
                 comments = collectComments(card)
                 for comment in comments:
