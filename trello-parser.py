@@ -67,7 +67,8 @@ def collectComments(card):
             else:
                 comment["isFresh"] = False
 
-            dateReverse = str(dateObj.year) + "." + str(dateObj.month) + "." + str(dateObj.day)
+            # dateReverse = str(dateObj.year) + "." + str(dateObj.month) + "." + str(dateObj.day)
+            dateReverse = dateObj.strftime("%Y.%m.%d")
             comment["date"] = dateReverse
 
             text = action["data"]["text"]
